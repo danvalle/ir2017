@@ -2,7 +2,7 @@ export TOP := $(shell pwd)
 export UNAME_S := $(shell uname -s)
 
 export CXX = g++
-export CXXFLAGS = -std=c++14 -Wall -Wextra -pedantic
+export CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic
 
 binaries = crawler 
 
