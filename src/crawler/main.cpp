@@ -1,6 +1,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <math.h>
+#include <unordered_map>
 #include <CkSpider.h>
 #include <CkStringArray.h>
 
@@ -40,32 +42,35 @@ public:
 int main() {
 	CkSpider spider;
 
-    priority_queue heap;
+    std::unordered_map<std::string, int> url_priority;
     CkStringArray seenDomains;
     CkStringArray seedUrls;
 
     seenDomains.put_Unique(true);
     seedUrls.put_Unique(true);
 
-    seedUrls.Append("http://tvuol.uol.com.br/canal/jogos/");
+    seedUrls.Append("http://www.uol.com.br");
 
-    spider.AddAvoidOutboundLinkPattern("*?id=*");
-    spider.AddAvoidOutboundLinkPattern("*?rf=*");
-    spider.AddAvoidOutboundLinkPattern("*?prd=*");
-    spider.AddAvoidOutboundLinkPattern("*.mypages.*");
-    spider.AddAvoidOutboundLinkPattern("*.personal.*");
-    spider.AddAvoidOutboundLinkPattern("*.comcast.*");
-    spider.AddAvoidOutboundLinkPattern("*.aol.*");
-    spider.AddAvoidOutboundLinkPattern("*~*");
+    // spider.AddAvoidOutboundLinkPattern("*?id=*");
+    // spider.AddAvoidOutboundLinkPattern("*?rf=*");
+    // spider.AddAvoidOutboundLinkPattern("*?prd=*");
+    // spider.AddAvoidOutboundLinkPattern("*.mypages.*");
+    // spider.AddAvoidOutboundLinkPattern("*.personal.*");
+    // spider.AddAvoidOutboundLinkPattern("*.comcast.*");
+    // spider.AddAvoidOutboundLinkPattern("*.aol.*");
+    // spider.AddAvoidOutboundLinkPattern("*~*");
 
     // spider.put_CacheDir("/home/dan/spiderCache/");
     // spider.put_FetchFromCache(true);
     // spider.put_UpdateCache(true);
 
+
+
     while (seedUrls.get_Count() > 0) {
 
         const char *url = seedUrls.pop();
         spider.Initialize(url);
+        std::cout << url << "\r\n";
 
     	// const char *robotsText = 0;
 	    // robotsText = spider.fetchRobotsText();
@@ -74,60 +79,49 @@ int main() {
         const char *domain = spider.getUrlDomain(url);
         seenDomains.Append(spider.getBaseDomain(domain));
 
-        // int i;
-        // bool success;
-        // for (i = 0; i < 5; i++) {
-        //     if (i == 0) {
-        //         std::cout << "Go out\n";
-        //     }
-
-        //     success = spider.CrawlNext();
-        //     if (success == true) {
-        //         std::cout << spider.lastUrl() << "\r\n";
-
-        //         if (spider.get_LastFromCache() != true) {
-        //             spider.SleepMs(1000);
-        //         }
-        //     }
-        //     else {
-        //         break;
-        //     }
-        // }
-
-        // for (i = 0; i < spider.get_NumOutboundLinks(); i++) {
-
-        //     url = spider.getOutboundLink(i);
-        //     const char *domain = spider.getUrlDomain(url);
-        //     const char *baseDomain = spider.getBaseDomain(domain);
-        //     std::cout << domain << "\r\n";
-
-        //     if (seenDomains.Contains(baseDomain) == false) {
-        //         if (seedUrls.get_Count() < 1000) {
-        //             seedUrls.Append(url);
-        //         }
-
-        //     }
-
-        // }
-
-
-
-        spider.CrawlNext();
-
-        int n_unspidered = spider.get_NumUnspidered();
-        int n_outbound = spider.get_NumOutboundLinks();
-        std::cout << spider.lastUrl() << "\r\n";
-
-        for (int i = 0; i < n_unspidered; i++) {
-            url = spider.getUnspideredUrl(0);
-            spider.SkipUnspidered(0);
-            std::cout << url << "\r\n";
+        int i;
+        bool success;
+        for (i = 0; pow(2, i) <= spider.get_NumOutboundLinks() + 1; i++) {
+            success = spider.CrawlNext();
+            if (success == true) {
+                if (spider.get_LastFromCache() != true) {
+                    spider.SleepMs(2000);
+                }
+		        std::cout << i << "," << pow(2, i) << " - " << spider.get_NumOutboundLinks() << "\r\n";
+            }
+            else {
+                break;
+            }
         }
 
-        // for (int i = 0; i < n_unspidered; i++) {
-        //     url = spider.getOutboundLink(i);
-        //     std::cout << url << "\r\n";
-        // }
+        for (i = 0; i < spider.get_NumOutboundLinks(); i++) {
+            url = spider.getOutboundLink(i);
+            const char *domain = spider.getUrlDomain(url);
+            const char *baseDomain = spider.getBaseDomain(domain);
+        	
+            if (seenDomains.Contains(baseDomain) == false) {
+	        	url_priority[baseDomain]++;
+
+                // if (seedUrls.get_Count() < 1000) {
+                //     seedUrls.Append(url);
+                // }
+            }
+        }
+
+        std::string max_url;
+        int max_url_counter = 0;
+        std::unordered_map<std::string, int>::iterator it;
+		for (it = url_priority.begin(); it != url_priority.end(); it++) {
+			if (it->second > max_url_counter) {
+				max_url = it->first;
+				max_url_counter = it->second;
+			}  
+			std::cout << it->first << " - "<<it->second << "\r\n";
+		}
+
+		const char *c_url = max_url.c_str();
+		seedUrls.Append(c_url);
+		std::cout << "MAX:" << c_url << "\r\n";
 
     }
 
