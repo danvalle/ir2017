@@ -9,47 +9,17 @@
 
 
 
-class priority_queue {
-    std::map<int, std::vector<std::string>> queue;
-public:
-    void add(int priority, std::string str) {
-        if(!queue[priority].empty()) {
-            queue[priority].push_back(str);
-        } else {
-            std::vector<std::string> vec;
-            vec.push_back(str);
-            queue[priority] = vec;
-        }
-    }
-    std::string remove() {
-        if(!queue.begin()->second.empty()) {
-            std::string temp = queue.begin()->second[0];
-            queue.begin()->second.erase(queue.begin()->second.begin());
-            if(queue.begin()->second.empty())
-                queue.erase(queue.begin());
-            return temp;
-        }
-        std::cout << "ERROR: QUEUE EMPTY!" << std::endl;
-        return "";
-    }
-};
-
-
-
 
 
 
 int main() {
 	CkSpider spider;
+    CkStringArray seenDomains;
+    seenDomains.put_Unique(true);
 
     std::unordered_map<std::string, int> url_priority;
-    CkStringArray seenDomains;
-    CkStringArray seedUrls;
+    std::unordered_map<std::string, std::string> seedUrl;
 
-    seenDomains.put_Unique(true);
-    seedUrls.put_Unique(true);
-
-    seedUrls.Append("http://www.uol.com.br");
 
     // spider.AddAvoidOutboundLinkPattern("*?id=*");
     // spider.AddAvoidOutboundLinkPattern("*?rf=*");
@@ -66,19 +36,28 @@ int main() {
 
 
 
-    while (seedUrls.get_Count() > 0) {
+    std::string max_url = "terra.com.br";
+    url_priority[max_url]++;
+    seedUrl[max_url] = "https://www.terra.com.br/";
 
-        const char *url = seedUrls.pop();
-        spider.Initialize(url);
-        std::cout << url << "\r\n";
+    while (!url_priority.empty()) {
+
+        std::string url = seedUrl[max_url];
+    	url_priority.erase(max_url);
+		seedUrl.erase(max_url);
+        std::cout << "Crawling " << url << "\r\n";
+
+        spider.Initialize(url.c_str());
+        const char *domain = spider.getUrlDomain(url.c_str());
+        seenDomains.Append(spider.getBaseDomain(domain));
+
 
     	// const char *robotsText = 0;
 	    // robotsText = spider.fetchRobotsText();
 	    // std::cout << robotsText << "\r\n";
 
-        const char *domain = spider.getUrlDomain(url);
-        seenDomains.Append(spider.getBaseDomain(domain));
 
+        // CRAWL IN LINKS
         int i;
         bool success;
         for (i = 0; pow(2, i) <= spider.get_NumOutboundLinks() + 1; i++) {
@@ -87,28 +66,35 @@ int main() {
                 if (spider.get_LastFromCache() != true) {
                     spider.SleepMs(2000);
                 }
-		        std::cout << i << "," << pow(2, i) << " - " << spider.get_NumOutboundLinks() << "\r\n";
+		        std::cout << i << " -> " << pow(2, i) << " <= " << spider.get_NumOutboundLinks()+1 << "\r\n";
             }
             else {
+            	std::cout << "CRAWL ERROR" << "\r\n";
                 break;
             }
         }
 
-        for (i = 0; i < spider.get_NumOutboundLinks(); i++) {
-            url = spider.getOutboundLink(i);
-            const char *domain = spider.getUrlDomain(url);
-            const char *baseDomain = spider.getBaseDomain(domain);
-        	
-            if (seenDomains.Contains(baseDomain) == false) {
-	        	url_priority[baseDomain]++;
 
-                // if (seedUrls.get_Count() < 1000) {
-                //     seedUrls.Append(url);
-                // }
+
+
+        // UPDATE OUTBOUND COUNTER
+        std::cout << "\r\nOUTBOUND:\r\n";
+        int n_outlinks = spider.get_NumOutboundLinks();
+        for (i = 0; i < n_outlinks; i++) {
+            url = spider.getOutboundLink(i);
+            const char *domain = spider.getUrlDomain(url.c_str());
+            const char *baseDomain = spider.getBaseDomain(domain);
+       	
+            if (seenDomains.Contains(baseDomain) == false) {
+            	std::cout << baseDomain << " : " << url << "\r\n";
+	        	url_priority[baseDomain]++;
+	        	seedUrl[baseDomain] = url; 
             }
         }
 
-        std::string max_url;
+
+
+        // GET NEXT URL
         int max_url_counter = 0;
         std::unordered_map<std::string, int>::iterator it;
 		for (it = url_priority.begin(); it != url_priority.end(); it++) {
@@ -116,15 +102,17 @@ int main() {
 				max_url = it->first;
 				max_url_counter = it->second;
 			}  
-			std::cout << it->first << " - "<<it->second << "\r\n";
 		}
 
-		const char *c_url = max_url.c_str();
-		seedUrls.Append(c_url);
-		std::cout << "MAX:" << c_url << "\r\n";
+
+        std::cout << "\r\nCOUNTER:\r\n";
+		for (it = url_priority.begin(); it != url_priority.end(); it++) {
+			std::cout << it->first << ", "<<it->second << "\r\n";
+		}
+        std::cout << "+++++++++++++++++\r\nLEN: " << url_priority.size();
+		std::cout << "\r\nMAX: " << max_url << "\r\n\r\n";
 
     }
-
 
 
    return 0;
