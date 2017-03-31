@@ -1,9 +1,12 @@
 #include <iostream>
+#include <future>
+
 #include <map>
 #include <vector>
-#include <math.h>
 #include <algorithm>
 #include <unordered_map>
+
+#include <math.h>
 #include <CkSpider.h>
 #include <CkStringArray.h>
 
@@ -41,6 +44,15 @@ public:
     	}
     }
 };
+
+
+
+
+
+int crawl_domains(CkSpider *spider) {
+	std::cout << "Async Outbounds " << spider->get_NumOutboundLinks() << "\r\n\n";
+	return 1;
+}
 
 
 
@@ -91,8 +103,6 @@ int main() {
 	    // std::cout << robotsText << "\r\n";
 
 
-
-
         // CRAWL IN LINKS
         int i;
         bool success;
@@ -124,12 +134,8 @@ int main() {
 					std::cout << "Inside crawl- " << smallest_url << "\r\n";
 				}
 
-
-
-
-
                 if (spider.get_LastFromCache() != true) {
-                    spider.SleepMs(20000);
+                    spider.SleepMs(1000);
                 }
             }
             else {
@@ -138,9 +144,10 @@ int main() {
         }
 
 
-
-
-
+		std::cout << "Sync Outbounds " << spider.get_NumOutboundLinks() << "\r\n";
+		std::future<int> returned = std::async(crawl_domains, &spider);
+		int res = returned.get();
+		res++;
 
 
         // UPDATE OUTBOUND COUNTER
@@ -158,6 +165,7 @@ int main() {
             }
         }
         spider.ClearOutboundLinks();
+
 
 
 
