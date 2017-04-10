@@ -1,0 +1,10 @@
+#ifndef utils_hpp
+#define utils_hpp
+
+///////////////// Functions /////////////////////
+long get_time();
+
+int url_score(std::string url);
+
+////////////////////////////////////////////////
+#endif
