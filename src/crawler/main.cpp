@@ -17,6 +17,7 @@
 
 int main() {
     int total_crawled = 0;
+    long start_time = get_time();
     const int num_threads = 20;
     std::thread thr[num_threads];
     std::vector<std::string> thread_htmls(num_threads);
@@ -84,6 +85,7 @@ int main() {
 		checkpoint(seenDomains, url_priority, seedUrl, total_crawled);
 	    std::cout << "\r\n\r\n+++++++++++++++++\r\nQUEUE LEN: " << url_priority.size();
 		std::cout << "\r\nTotal Crawled: " << total_crawled;
+		std::cout << "\r\nTime: " << get_time() - start_time;
 		std::cout << "\r\n+++++++++++++++++\r\n";
     }
 
