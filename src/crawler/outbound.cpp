@@ -11,7 +11,7 @@
 #include "outbound.hpp"
 #include "utils.hpp"
 
-#define NUM_DOMAINS_IN_THREAD 20
+#define NUM_DOMAINS_IN_THREAD 15
 #define MAX_HTML_SIZE 5000000
 #define MAX_DOMAINS_LIST_SIZE 2000
 
@@ -90,9 +90,9 @@ void fill_thread_links(std::vector<std::string> *thread_links,
    		}
 	}
 
-	// std::cout << "\r\nMAX: ";
-	// for (std::vector<std::string>::const_iterator i = thread_links->begin(); i != thread_links->end(); i++) {
-	//     std::cout << *i << ", ";			
-	// }
-	// std::cout << "\r\n";
+	std::cout << "\r\nMAX: ";
+	for (std::vector<std::string>::const_iterator i = thread_links->begin(); i != thread_links->end(); i++) {
+	    std::cout << *i << ", ";			
+	}
+	std::cout << "\r\n";
 } 

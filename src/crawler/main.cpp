@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <thread>
 
 #include <map>
@@ -15,6 +16,12 @@
 
 
 int main() {
+    int total_crawled = 0;
+    const int num_threads = 20;
+    std::thread thr[num_threads];
+    std::vector<std::string> thread_htmls(num_threads);
+    initialize_thread_strings(num_threads, thread_htmls);
+
 	CkSpider spider;
     CkStringArray seenDomains;
     seenDomains.put_Unique(true);
@@ -22,25 +29,33 @@ int main() {
     std::unordered_map<std::string, int> url_priority;
     std::unordered_map<std::string, std::string> seedUrl;
 
-    const int num_threads = 1;
-    std::thread thr[num_threads];
-    std::vector<std::string> thread_htmls(num_threads);
-    initialize_thread_strings(num_threads, thread_htmls);
+    std::ifstream cp("data/checkpoint_url_priority");
+    if (cp) {
+    	std::cout << "CHECKPOINT FOUND" << "\r\n";
+    	get_checkpoint(seenDomains, url_priority, seedUrl, &total_crawled);
+    } else {
+	    std::string max_url = "bb.com.br";
+	    url_priority[max_url]++;
+	    seedUrl[max_url] = "http://www.bb.com.br/pbb/pagina-inicial#/";
 
-    std::string max_url = "terra.com.br";
-    url_priority[max_url]++;
-    seedUrl[max_url] = "https://www.terra.com.br/";
+		max_url = "bradesco.com.br";
+	    url_priority[max_url]++;
+	    seedUrl[max_url] = "https://banco.bradesco/html/classic/index.shtm";
 
-	max_url = "r7.com";
-    url_priority[max_url]++;
-    seedUrl[max_url] = "http://www.r7.com/";
-	
-	max_url = "bahianoticias.com.br";
-    url_priority[max_url]++;
-    seedUrl[max_url] = "http://www.bahianoticias.com.br/";
+		max_url = "itau.com.br";
+	    url_priority[max_url]++;
+	    seedUrl[max_url] = "https://www.itau.com.br/";
+
+		max_url = "caixa.gov.br";
+	    url_priority[max_url]++;
+	    seedUrl[max_url] = "http://www.caixa.gov.br/Paginas/home-caixa.aspx";
+
+	    max_url = "santander.com.br";
+	    url_priority[max_url]++;
+	    seedUrl[max_url] = "https://www.santander.com.br/br/";
+    }
 
 
-    int total_crawled = 0;
     while (!url_priority.empty()) {
         int i;
 
@@ -66,6 +81,7 @@ int main() {
 
 		update_counter(spider, seenDomains, url_priority, seedUrl, new_outbound_links);
 
+		checkpoint(seenDomains, url_priority, seedUrl, total_crawled);
 	    std::cout << "\r\n\r\n+++++++++++++++++\r\nQUEUE LEN: " << url_priority.size();
 		std::cout << "\r\nTotal Crawled: " << total_crawled;
 		std::cout << "\r\n+++++++++++++++++\r\n";

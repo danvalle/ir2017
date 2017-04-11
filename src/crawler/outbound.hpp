@@ -35,7 +35,8 @@ public:
     }
 };
 
-void initialize_thread_strings(int num_threads, std::vector<std::string> &thread_htmls);
+void initialize_thread_strings(int num_threads, 
+							   std::vector<std::string> &thread_htmls);
 
 void update_counter(CkSpider &spider,
 					CkStringArray &seenDomains,

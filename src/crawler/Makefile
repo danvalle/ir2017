@@ -16,4 +16,4 @@ indomain.o: indomain.cpp
 	$(CXX) $(CXXFLAGS) -I$(TOP)/lib/chilkat-9.5.0-x86_64-linux-gcc/include/ -c indomain.cpp -o indomain.o
 
 utils.o: utils.cpp
-	$(CXX) $(CXXFLAGS) -c utils.cpp -o utils.o
+	$(CXX) $(CXXFLAGS) -I$(TOP)/lib/chilkat-9.5.0-x86_64-linux-gcc/include/ -c utils.cpp -o utils.o

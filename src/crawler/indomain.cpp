@@ -68,7 +68,7 @@ void crawl_domains(std::vector<std::string> thread_links,
     std::vector<std::string> used;
     std::vector<int> inside_crawl(num_domains, 0);
     std::vector<long> last_crawled_time(num_domains, 0);
-    long same_domain_wait_time = 3000;
+    long same_domain_wait_time = 15000;
 
 
     //  PRIORITY QUEUE TO GET BEST INLINK TO CRAWL
