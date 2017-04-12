@@ -83,9 +83,9 @@ int main() {
 		std::cout << "\r\nUPDATING COUNTER\r\n";
 		update_counter(spider, url_priority, seedUrl, new_outbound_links);
 
-		std::cout << "\r\n\r\nCREATING CHECKPOINT\r\n";
+		std::cout << "\r\nCREATING CHECKPOINT\r\n";
 		checkpoint(seenDomains, url_priority, seedUrl, total_crawled);
-	    std::cout << "\r\n\r\n+++++++++++++++++\r\nQueu Len: " << url_priority.size();
+	    std::cout << "\r\n+++++++++++++++++\r\nQueu Len: " << url_priority.size();
 		std::cout << "\r\nTotal Pages Crawled: " << total_crawled;
 	    std::cout << "\r\nTotal Domains Crawled: " << seenDomains.get_Length();
 		std::cout << "\r\nTime: " << get_time() - start_time;

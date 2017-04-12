@@ -19,19 +19,21 @@
 
 void write_html(CkSpider &spider, std::string *htmls, int thread_num) {
     std::string new_html = spider.lastHtml();
-	std::replace(new_html.begin(), new_html.end(), '|', ' ');
-	*htmls += " ";
-	*htmls += spider.lastUrl();
-	*htmls += " | ";
-	*htmls += new_html;
-	*htmls += " |||";
-	if (htmls->size() > MAX_HTML_SIZE) {
-		std::ofstream outfile;
-		outfile.open("data/html_"+std::to_string(thread_num)+".txt", std::ios_base::app);
-		outfile << *htmls;
+    if (new_html.length() > 0) {
+    	std::replace(new_html.begin(), new_html.end(), '|', ' ');
+    	*htmls += " ";
+    	*htmls += spider.lastUrl();
+    	*htmls += " | ";
+    	*htmls += new_html;
+    	*htmls += " |||";
+    	if (htmls->size() > MAX_HTML_SIZE) {
+    		std::ofstream outfile;
+    		outfile.open("data/html_"+std::to_string(thread_num)+".txt", std::ios_base::app);
+    		outfile << *htmls;
 
-		*htmls = "";
-	}
+    		*htmls = "";
+	    }
+    }
 }
 
 
