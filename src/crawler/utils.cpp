@@ -5,7 +5,6 @@
 #include <regex>
 #include <unordered_map>
 
-#include <CkSpider.h>
 #include <CkStringArray.h>
 
 #include "utils.hpp"
@@ -32,7 +31,7 @@ int url_score(std::string url) {
 	if (std::regex_search (url,m,pos)) {
 		score -= 5;
 	}  
-	std::regex neg("(id=)|(rf=)|(prd=)|(.mypages.)|(.personal.)|(/send)");
+	std::regex neg("(id=)|(rf=)|(prd=)|(.mypages.)|(.personal.)|(/send)|(.png)");
 	if (std::regex_search (url,m,neg)) {
 		score += 10;
 	}  

@@ -17,8 +17,7 @@
 
 int main() {
     int total_crawled = 0;
-    long start_time = get_time();
-    const int num_threads = 20;
+    const int num_threads = 50;
     std::thread thr[num_threads];
     std::vector<std::string> thread_htmls(num_threads);
     initialize_thread_strings(num_threads, thread_htmls);
@@ -56,7 +55,7 @@ int main() {
 	    seedUrl[max_url] = "https://www.santander.com.br/br/";
     }
 
-
+    long start_time = get_time();
     while (!url_priority.empty()) {
         int i;
 
@@ -69,6 +68,7 @@ int main() {
 			
 	        thr[filled_threads] = std::thread(crawl_domains,
 	        	thread_links,
+	        	&seenDomains,
 	        	&new_outbound_links,
 	        	&thread_htmls[filled_threads],
 				&total_crawled,
@@ -80,11 +80,14 @@ int main() {
 	        thr[i].join();
 		}
 
-		update_counter(spider, seenDomains, url_priority, seedUrl, new_outbound_links);
+		std::cout << "\r\nUPDATING COUNTER\r\n";
+		update_counter(spider, url_priority, seedUrl, new_outbound_links);
 
+		std::cout << "\r\n\r\nCREATING CHECKPOINT\r\n";
 		checkpoint(seenDomains, url_priority, seedUrl, total_crawled);
-	    std::cout << "\r\n\r\n+++++++++++++++++\r\nQUEUE LEN: " << url_priority.size();
-		std::cout << "\r\nTotal Crawled: " << total_crawled;
+	    std::cout << "\r\n\r\n+++++++++++++++++\r\nQueu Len: " << url_priority.size();
+		std::cout << "\r\nTotal Pages Crawled: " << total_crawled;
+	    std::cout << "\r\nTotal Domains Crawled: " << seenDomains.get_Length();
 		std::cout << "\r\nTime: " << get_time() - start_time;
 		std::cout << "\r\n+++++++++++++++++\r\n";
     }

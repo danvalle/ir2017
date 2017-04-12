@@ -39,7 +39,6 @@ void initialize_thread_strings(int num_threads,
 							   std::vector<std::string> &thread_htmls);
 
 void update_counter(CkSpider &spider,
-					CkStringArray &seenDomains,
 					std::unordered_map<std::string, int> &url_priority,
 					std::unordered_map<std::string, std::string> &seedUrl,
                     std::vector<std::string> new_outbound_links);

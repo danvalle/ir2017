@@ -11,9 +11,9 @@
 #include "outbound.hpp"
 #include "utils.hpp"
 
-#define NUM_DOMAINS_IN_THREAD 15
+#define NUM_DOMAINS_IN_THREAD 50
 #define MAX_HTML_SIZE 5000000
-#define MAX_DOMAINS_LIST_SIZE 2000
+#define MAX_DOMAINS_LIST_SIZE 4000
 
 
 void initialize_thread_strings(int num_threads, std::vector<std::string> &thread_htmls) {
@@ -26,7 +26,6 @@ void initialize_thread_strings(int num_threads, std::vector<std::string> &thread
 
 
 void update_counter(CkSpider &spider,
-					CkStringArray &seenDomains,
 					std::unordered_map<std::string, int> &url_priority,
 					std::unordered_map<std::string, std::string> &seedUrl,
                     std::vector<std::string> new_outbound_links) {
@@ -37,12 +36,15 @@ void update_counter(CkSpider &spider,
     for (i = 0; i < n_outlinks; i++) {
         url = new_outbound_links[i];
         const char *domain = spider.getUrlDomain(url.c_str());
-        const char *baseDomain = spider.getBaseDomain(domain);
+        std::string baseDomain = spider.getBaseDomain(domain);
 
-        if ((seenDomains.Contains(baseDomain) == false) && (url_priority.size() < MAX_DOMAINS_LIST_SIZE)) {
+        if ((url_priority.size() < MAX_DOMAINS_LIST_SIZE) && (baseDomain.length() > 5) && (url.length() > 5)) {
         	url_priority[baseDomain]++;
-        	if (url_score(url) < url_score(seedUrl[baseDomain])) {
-	        	seedUrl[baseDomain] = url;     		
+        	if (url_priority[baseDomain] == 1) {        		
+        		seedUrl[baseDomain] = url;
+        	} 
+        	else if (url_score(url) < url_score(seedUrl[baseDomain])) {
+	        	seedUrl[baseDomain] = url;
         	}
         }
     }
@@ -55,14 +57,6 @@ void fill_thread_links(std::vector<std::string> *thread_links,
 					  CkSpider *spider,
 					  CkStringArray *seenDomains) {
     // GET LIST OF DOMAINS TO CRAWL NEXT
-    
-    // std::cout << "\r\n++++++TABLE++++++\r\n";
-		// std::unordered_map<std::string, int>::iterator it;
-	// for (it = url_priority.begin(); it != url_priority.end(); it++) {
-		// std::cout << it->first << ", "<<it->second << "\r\n";
-	// }
-    // std::cout << "+++++++++++++++++\r\nLEN: " << url_priority.size();
-
     int i;
     std::string url;
     for (i = 0; i < NUM_DOMAINS_IN_THREAD; i++) { 
@@ -90,9 +84,10 @@ void fill_thread_links(std::vector<std::string> *thread_links,
    		}
 	}
 
-	std::cout << "\r\nMAX: ";
-	for (std::vector<std::string>::const_iterator i = thread_links->begin(); i != thread_links->end(); i++) {
-	    std::cout << *i << ", ";			
+	std::cout << "MAX: ";
+	std::vector<std::string>::const_iterator max;
+	for (std::vector<std::string>::const_iterator max = thread_links->begin(); max != thread_links->end(); max++) {
+	    std::cout << *max << ", ";			
 	}
 	std::cout << "\r\n";
 } 

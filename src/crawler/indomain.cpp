@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <CkSpider.h>
+#include <CkStringArray.h>
 
 #include "outbound.hpp"
 #include "utils.hpp"
@@ -42,16 +43,27 @@ int get_valid_domain(int domain_n, int num_domains, std::vector<int> inside_craw
 }
 
 
-void collect_outbound_links(CkSpider &spider, std::vector<std::string> &new_outbound_links) {
+void collect_outbound_links(CkSpider &spider, std::vector<std::string> *new_outbound_links, CkStringArray *seenDomains) {
     int i;
+    std::string url;
+    const char *domain;
+    std::string baseDomain;
     int n_outlinks = spider.get_NumOutboundLinks();
     for (i = 0; i < n_outlinks; i++) {
-        new_outbound_links.push_back(spider.getOutboundLink(i));
+        url = spider.getOutboundLink(i);
+        domain = spider.getUrlDomain(url.c_str());
+        baseDomain = spider.getBaseDomain(domain);
+        if ((url.find_first_of(' ') == std::string::npos) &&
+            (seenDomains->Contains(baseDomain.c_str()) == false) &&
+            (new_outbound_links->size() < 100000)) {
+            new_outbound_links->push_back(url);
+        }
     }
 }
 
 
 void crawl_domains(std::vector<std::string> thread_links,
+                   CkStringArray *seenDomains,
 				   std::vector<std::string> *new_outbound_links,		
 				   std::string *htmls,
 				   int *total_crawled,
@@ -68,7 +80,7 @@ void crawl_domains(std::vector<std::string> thread_links,
     std::vector<std::string> used;
     std::vector<int> inside_crawl(num_domains, 0);
     std::vector<long> last_crawled_time(num_domains, 0);
-    long same_domain_wait_time = 15000;
+    long same_domain_wait_time = 30000;
 
 
     //  PRIORITY QUEUE TO GET BEST INLINK TO CRAWL
@@ -85,25 +97,22 @@ void crawl_domains(std::vector<std::string> thread_links,
         spider.Initialize(url.c_str());
 		spider.fetchRobotsText();
 
-
         // SLEEP IF LESS THAN 30s
     	long sleep_time = last_crawled_time[domain_n] + same_domain_wait_time;
     	sleep_time -= get_time();
     	if (sleep_time > 0) {
-	    	std::cout << "\r\nSleep " << sleep_time;
+	    	std::cout << "Sleep " << sleep_time << "\r\n";
             spider.SleepMs(sleep_time);
     	}
     
-
         // Crawl page and get all the info
 		last_crawled_time[domain_n] = get_time();
 
         success = spider.CrawlNext();
         if (success == true) {
 	        (*total_crawled)++;
-	        collect_outbound_links(spider, *new_outbound_links);
-	        std::cout << "\r\nCrawling " << thread_links[domain_n]  << "\r\n";
-			std::cout << "2^Pages in Domain: " << pow(2,inside_crawl[domain_n]) << " <= " << spider.get_NumOutboundLinks() << "\r\n";
+	        collect_outbound_links(spider, new_outbound_links, seenDomains);
+			// std::cout << "2^Pages in Domain: " << pow(2,inside_crawl[domain_n]) << " <= " << spider.get_NumOutboundLinks() << "\r\n";
 			write_html(spider, htmls, thread_num);
         }
 
@@ -131,7 +140,6 @@ void crawl_domains(std::vector<std::string> thread_links,
                 		next_url = "";
                 		inside_crawl[domain_n] = -1;
                 		complete_domains++;
-                		// std::cout << "Domain " << domain_n << " is empty\r\n";
                 		break;
                 	}
                     next_url = inlink_queues[domain_n].remove();
@@ -140,13 +148,11 @@ void crawl_domains(std::vector<std::string> thread_links,
             }
 
         } else {
-            // std::cout << thread_links[domain_n] << " Finished.\r\n";
             complete_domains++;
             inside_crawl[domain_n] = -1;
         }
     	
         domain_n = (domain_n + 1) % num_domains;
     	spider.ClearOutboundLinks();
-
     }
 }
