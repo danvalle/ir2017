@@ -1,7 +1,7 @@
 #ifndef outbound_hpp
 #define outbound_hpp
 
-///////////////// Functions /////////////////////
+
 class priority_queue {
     std::map<int, std::vector<std::string>> queue;
 public:
@@ -35,19 +35,53 @@ public:
     }
 };
 
+
+///////////////// Functions /////////////////////
+/*
+ * Function:  initialize_thread_strings
+ * --------------------
+ *  Initialize and reserve memory for strings that will collect the html
+ *  
+ *  num_threads: chosen number of threads
+ *  thread_htmls: strings that will collect the html
+ *
+ */
 void initialize_thread_strings(int num_threads, 
 							   std::vector<std::string> &thread_htmls);
 
-void update_counter(CkSpider &spider,
-					std::unordered_map<std::string, int> &url_priority,
-					std::unordered_map<std::string, std::string> &seedUrl,
-                    std::vector<std::string> new_outbound_links);
-
+/*
+ * Function:  fill_thread_links
+ * --------------------
+ *  Gets best urls from table to send to thread and update seen domains list
+ *  
+ *  thread_links: vector to be filled with urls
+ *  url_prioriy: table of domains and counter  
+ *  seedUrl: table of domains and their respective url
+ *  spider: collector object 
+ *  seenDomains: domains already seen
+ *
+ */
 void fill_thread_links(std::vector<std::string> *thread_links,
 					  std::unordered_map<std::string, int> &url_priority,
 					  std::unordered_map<std::string, std::string> &seedUrl,
 					  CkSpider *spider,
 					  CkStringArray *seenDomains);
+
+/*
+ * Function:  update_counter
+ * --------------------
+ *  Update table of next domains with links collected 
+ *  
+ *  spider: collector object 
+ *  url_prioriy: table of domains and counter  
+ *  seedUrl: table of domains and their respective url
+ *  new_outbound_links: collected outbound urls
+ *
+ */
+void update_counter(CkSpider &spider,
+					std::unordered_map<std::string, int> &url_priority,
+					std::unordered_map<std::string, std::string> &seedUrl,
+                    std::vector<std::string> new_outbound_links);
 
 ////////////////////////////////////////////////
 #endif

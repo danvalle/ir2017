@@ -16,6 +16,7 @@
 
 
 int main() {
+	// Initialize variable
     int total_crawled = 0;
     const int num_threads = 50;
     std::thread thr[num_threads];
@@ -29,6 +30,7 @@ int main() {
     std::unordered_map<std::string, int> url_priority;
     std::unordered_map<std::string, std::string> seedUrl;
 
+    // Look for checkpoints. If found, initialize it.
     std::ifstream cp("data/checkpoint_url_priority");
     if (cp) {
     	std::cout << "CHECKPOINT FOUND" << "\r\n";
@@ -55,17 +57,20 @@ int main() {
 	    seedUrl[max_url] = "https://www.santander.com.br/br/";
     }
 
+    // Will crawl until there is no more domains in the table
     long start_time = get_time();
     while (!url_priority.empty()) {
         int i;
 
-		// SEND DOMAINS TO THREADS
+		// Will fill the maximum amount of threads it can
         int filled_threads = 0;
         std::vector<std::string> new_outbound_links;
         while ((filled_threads < num_threads) && (!url_priority.empty())) {
+        	// Get the best links in the table to send to the next thread
         	std::vector<std::string> thread_links;
         	fill_thread_links(&thread_links, url_priority, seedUrl, &spider, &seenDomains);
 			
+			// Send domains to thread, so it can independently crawl them
 	        thr[filled_threads] = std::thread(crawl_domains,
 	        	thread_links,
 	        	&seenDomains,
@@ -76,22 +81,23 @@ int main() {
 	        
 	        filled_threads++;
 		}
+		// Wait until all threads have finished
 		for (i = 0; i < filled_threads; i++) {
 	        thr[i].join();
 		}
 
-		std::cout << "\r\nUPDATING COUNTER\r\n";
+		// Update table to start next cicle
 		update_counter(spider, url_priority, seedUrl, new_outbound_links);
 
+		// Create checkpoint
 		std::cout << "\r\nCREATING CHECKPOINT\r\n";
 		checkpoint(seenDomains, url_priority, seedUrl, total_crawled);
-	    std::cout << "\r\n+++++++++++++++++\r\nQueu Len: " << url_priority.size();
+	    std::cout << "\r\n+++++++++++++++++\r\nQueue Len: " << url_priority.size();
 		std::cout << "\r\nTotal Pages Crawled: " << total_crawled;
 	    std::cout << "\r\nTotal Domains Crawled: " << seenDomains.get_Length();
 		std::cout << "\r\nTime: " << get_time() - start_time;
 		std::cout << "\r\n+++++++++++++++++\r\n";
     }
 
-    std::cout << "TERMINOU - FILA VAZIA";
     return 0;
 }
